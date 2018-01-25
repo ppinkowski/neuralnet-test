@@ -3,13 +3,30 @@
   <head>
     <meta charset="utf-8">
     <title>Neural Network</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-polyfill/6.26.0/polyfill.js"></script>
+    <script
+      src="https://code.jquery.com/jquery-3.3.1.min.js"
+      integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8="
+      crossorigin="anonymous">
+    </script>
     <script src="build/bundle.js"></script>
     <link rel="stylesheet" type="text/css" href="index.css">
   </head>
   <body>
-    <button id="train">Train Network</button>
-    <button id="save">Save Network</button>
+    <div class="buttons">
+      <label>Epochs</label><input id="epochs" value="10" type="number"/>
+      <label>Learning Rate</label><input id="learningRate" value="3.0" type="number"/>
+      <label>Batch Size</label><input id="batchSize" value="100" type="number"/>
+      <button id="train">Train Network</button>
+      <div id="trainProgress" class="hidden"><span></span><span>Complete</span></div>
+      <button id="stop" class="hidden">Stop Training</button>
+      <button id="save">Save Network</button>
+      <button id="test">Test Network</button>
+      <button id="testImage">Test Image</button>
+      <button id="clearImage">Clear Image</button>
+    </div>
+    <div id="inputContainer">
+      <canvas id="inputCanvas"/>
+    </div>
     <textarea id="output"></textarea>
     <div id="imageContainer"></div>
   </body>

@@ -16,7 +16,7 @@ const byteArrayToInt = (array, start) => {
 
 // Load MNIST data and return in a usable format
 // return as [[value, [pixelValue]]]
-export const fetchData = async (dataUrl = 'data/train-images.idx3-ubyte', labelsUrl = 'data/train-labels.idx1-ubyte') => {
+export const fetchData = async (dataUrl = '/data/train-images.idx3-ubyte', labelsUrl = '/data/train-labels.idx1-ubyte') => {
     const [data, labels] = await Promise.all([fetchRawData(dataUrl), fetchRawData(labelsUrl)]);
     const numImages = byteArrayToInt(data, 4);
     const height = byteArrayToInt(data, 8);
@@ -35,9 +35,10 @@ export const fetchData = async (dataUrl = 'data/train-images.idx3-ubyte', labels
     return result;
 }
 
-export const fetchVariables = async () => {
-    const data = await fetch('data/variables.json');
-    return await data.json();
+export const fetchNetworkState = async () => {
+    const data = await fetch('data/network.json');
+    if (data.ok) {
+        return await data.json();
+    }
+    return null;
 }
-
-

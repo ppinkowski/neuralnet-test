@@ -1,6 +1,4 @@
-import { log, renderImage, gaussianRand } from './utils';
-import { fetchData, fetchVariables } from './dataLoader';
-import download from 'downloadjs';
+import { gaussianRand, formatTestResult } from './utils';
 import _ from 'lodash';
 
 class NeuralNet {
@@ -9,6 +7,11 @@ class NeuralNet {
     biases;
     sizes;
     layers;
+    logger;
+    updateHandler;
+    isTraining;
+    activation;
+    activationDerivative;
 
     // Pass in the sizes of each layer of the network
     // A layer will be created for each size parameter
@@ -29,6 +32,17 @@ class NeuralNet {
         
         // biases are initialised for each neuron
         this.biases = sizes.slice(1).map(s => _.range(s).map(gaussianRand));
+
+        this.activation = this.sigmoid;
+        this.activationDerivative = this.sigmoidDerivative;
+    }
+
+    setLogger(logger) {
+        this.logger = logger;
+    }
+
+    setUpdateHandler(handler) {
+        this.handler = handler;
     }
 
     // if returnAllLayers is true, return the results of all the layers of the
@@ -41,7 +55,7 @@ class NeuralNet {
                 // calculate the sum total of each input value * each corresponding weight
                 const total = input.reduce((t, v, k) => t + (v * this.weights[i - 1][j][k]), 0);
                 // calculate the value for this neuron using the sigmoid function
-                result.push(this.sigmoid(total + this.biases[i - 1][j]));
+                result.push(this.activation(total + this.biases[i - 1][j]));
             }
             if (returnAllLayers) {
                 output.push(result);
@@ -57,6 +71,9 @@ class NeuralNet {
     // descent. If test data is provided the network will evaluate itself with the
     // given test data after each epoch
     train = (data, learningRate = 3, epochs = 10, batchSize = 10, testData = null) => {
+        if (this.isTraining) return;
+        this.isTraining = true;
+        this.logger('Started Training');
         const numBatches = data.length / batchSize;
         for (let i = 0; i < epochs; i++) {
             // shuffle the data so each mini batch is different every epoch
@@ -65,8 +82,12 @@ class NeuralNet {
                 // get an initial set of update variables initialised to all zeros
                 const { weights, biases } = this.initialiseWeightAndBiasUpdates();
                 for (let k = 0; k < batchSize; k++) {
+                    // break out of training loop if it has been stopped externally
+                    if (!this.isTraining) { return; }
+                    const dataIndex = (j * batchSize) + k;
                     // update the weight and bias deltas with the next training sample
-                    this.trainOneInput(data[(j * batchSize) + k], weights, biases);
+                    this.trainOneInput(data[dataIndex], weights, biases);
+                    this.handler && this.handler(((dataIndex / data.length * 100) / epochs) + (i * (100 / epochs)));
                 }
                 // update the actual network weights and biases with the calculated 
                 // deltas from this batch, using the learning rate to modify how
@@ -75,16 +96,24 @@ class NeuralNet {
             }
             // test the network at this point if we have test data
             if (testData) {
-                const testResult = this.test(testData);
-                console.log(`Completed Epoch ${i + 1}: ${testResult} / ${testData.length} (${testResult / testData.length * 100}%)`);
+                this.logger(formatTestResult(this, testData, `Completed Epoch ${i + 1}, Accuracy: `));
             }
         }
+        this.isTraining = false;
+        this.logger('Training Completed');
     }
 
-    saveNetworkState = () => {
-        const state = { weights: this.weights, biases: this.biases };
-        const json = JSON.stringify(state);
-        download(json, 'network.json', 'application/json');
+    stopTraining() {
+        this.isTraining = false;
+    }
+
+    loadNetworkState = ({ weights, biases }) => {
+        this.weights = weights;
+        this.biases = biases;
+    }
+
+    getNetworkState = () => {
+        return { weights: this.weights, biases: this.biases };
     }
 
     // create a collection of new weight and bias updates all initialised to zero
@@ -187,16 +216,24 @@ class NeuralNet {
         return x * (1 - x);
     }
 
+    relu(x) {
+        return Math.max(0, x);
+    }
+
+    reluDerivative(x) {
+        return x > 0 ? 1 : 0;
+    }
+
     // Calculate the error on a neuron in a hidden layer of the network
     // This is the total weighted error of all the neurons in the next 
     // layer that this neuron is connected to
     hiddenNeuronError(output, nextLayerWeights, nextLayerErrors) {
-        return nextLayerErrors.reduce((t, e, i) => t + (nextLayerWeights[i] * e), 0) * this.sigmoidDerivative(output);
+        return nextLayerErrors.reduce((t, e, i) => t + (nextLayerWeights[i] * e), 0) * this.activationDerivative(output);
     }
 
     // Calculate the error of a neuron in the output layer
     outputNeuronError(output, expected) {
-        return (expected - output) * this.sigmoidDerivative(output);
+        return (expected - output) * this.activationDerivative(output);
     }
 
     // Return an expected output result of the network for a given value

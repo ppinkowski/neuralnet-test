@@ -37,3 +37,8 @@ export const gaussianRand = () => {
     }
     return ((rand / 6) * 5) - 2.5;
 }
+
+export const formatTestResult = (net, testData, prefix = '') => {
+    const testResult = net.test(testData);
+    return `${prefix}${testResult} / ${testData.length} (${Math.round(testResult / testData.length * 10000) / 100}%)`;
+}

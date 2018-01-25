@@ -4,22 +4,24 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "rollup -c",
-    "build:watch": "rollup -c -w"
+    "build": "rollup -c && rollup -c worker.rollup.config.js",
+    "build:watch": "concurrently \"rollup -c -w\" \"rollup -c worker.rollup.config.js -w\""
   },
   "author": "",
   "license": "ISC",
   "private": true,
   "dependencies": {
+    "babel-polyfill": "^6.26.0",
     "downloadjs": "^1.4.7",
     "lodash": "^4.17.4",
     "stream-to-array": "^2.3.0"
   },
   "devDependencies": {
+    "babel-core": "^6.26.0",
     "babel-plugin-external-helpers": "^6.22.0",
     "babel-preset-env": "^1.6.1",
     "babel-preset-stage-0": "^6.24.1",
-    "babel-core": "^6.26.0",
+    "concurrently": "^3.5.1",
     "rollup": "^0.55.0",
     "rollup-plugin-babel": "^3.0.3",
     "rollup-plugin-commonjs": "^8.2.6",

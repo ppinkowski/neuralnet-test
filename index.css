@@ -16,10 +16,49 @@ textarea {
 button {
     padding: 5px;
     margin: 10px;
+    display: inline-block;
+}
+
+.buttons {
+    display: inline-block;
 }
 
 #display {
     width: 28px;
     height: 28px;
     margin: 10px;
+}
+
+#inputContainer {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#inputCanvas {
+    border: 1px solid #a5a5a5;
+    width: 28px;
+    height: 28px;
+    margin-top: 5px;
+    transform: translateY(10px);
+}
+
+.buttons input {
+    width: 50px;
+}
+
+.buttons label {
+    margin: 0 10px;
+}
+
+#trainProgress {
+    width: 120px;
+    display: inline-block;
+}
+
+.hidden {
+    display: none !important;
+}
+
+#trainProgress > span:last-child {
+    float: right;
 }
