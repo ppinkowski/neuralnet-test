@@ -30,12 +30,17 @@ export const renderImage = (data) => {
     label.innerText = data[0];
 }
 
-export const gaussianRand = () => {
+export const gaussianRand = (range = 5) => {
     var rand = 0;
     for (var i = 0; i < 6; i += 1) {
         rand += Math.random();
     }
-    return ((rand / 6) * 5) - 2.5;
+    return ((rand / 6) * range) - (range / 2);
+}
+
+export const heInit = (numConIn, numComOut) => {
+    const range = Math.sqrt(12 / (numConIn + numComOut)) * 2;
+    return gaussianRand(range)
 }
 
 export const formatTestResult = (net, testData, prefix = '') => {

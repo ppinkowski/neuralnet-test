@@ -1,4 +1,4 @@
-import { gaussianRand, formatTestResult } from './utils';
+import { gaussianRand, formatTestResult, heInit } from './utils';
 import _ from 'lodash';
 
 class NeuralNet {
@@ -28,13 +28,13 @@ class NeuralNet {
         // Each of these is an array with an entry for the connection weight to
         // each neuron in the previous layer
         this.weights =_.zip(sizes.slice(1), sizes.slice(0, -1))
-            .map(([x, y]) => _.range(x).map(r => _.range(y).map(gaussianRand)));
+            .map(([x, y]) => _.range(x).map(r => _.range(y).map(() => heInit(x, y))));
         
         // biases are initialised for each neuron
         this.biases = sizes.slice(1).map(s => _.range(s).map(gaussianRand));
 
-        this.activation = this.sigmoid;
-        this.activationDerivative = this.sigmoidDerivative;
+        this.activation = this.relu;
+        this.activationDerivative = this.reluDerivative;
     }
 
     setLogger(logger) {
